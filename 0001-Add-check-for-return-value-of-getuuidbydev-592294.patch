@@ -1,0 +1,31 @@
+From bcfaffc517b4e7ff1704c8ef9f5c9ae2cd6b4dec Mon Sep 17 00:00:00 2001
+From: Brian C. Lane <bcl@redhat.com>
+Date: Thu, 3 Jun 2010 15:23:45 -0700
+Subject: [PATCH] Add check for return value of getuuidbydev (#592294)
+
+If the device doesn't exist this can return a null. Check before calling
+strcmp() and return 0 if it fails.
+
+Resolves: rhbz#592294
+---
+ grubby.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/grubby.c b/grubby.c
+index ccc0279..c984c04 100644
+--- a/grubby.c
++++ b/grubby.c
+@@ -1293,6 +1293,10 @@ int suitableImage(struct singleEntry * entry, const char * bootPrefix,
+     if (!rootdev)
+ 	return 0;
+ 
++    if (!getuuidbydev(rootdev) || !getuuidbydev(dev)) {
++        free(rootdev);
++        return 0;
++    }
+ 
+     if (strcmp(getuuidbydev(rootdev), getuuidbydev(dev))) {
+ 	free(rootdev);
+-- 
+1.7.1.1
+
